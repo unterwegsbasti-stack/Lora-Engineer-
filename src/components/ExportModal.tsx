@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Copy, Check, Code, FileCode, Layers, Terminal } from 'lucide-react';
 import { BaseModel, LoraWeight, TrainingConfig } from '../types';
+import { downloadEdgeModelFile } from '../utils/edgeModelExporter';
 
 interface ExportModalProps {
   selectedModel: BaseModel;
@@ -208,6 +209,28 @@ image.save("result_lora_stack.png")
   };
 
   const handleDownload = () => {
+    if (activeTab === 'litert') {
+      downloadEdgeModelFile({
+        model: selectedModel,
+        loras: loras,
+        customName: `${selectedModel.name} [Google LiteRT Export]`,
+        quantMode: 'int4-litert',
+        format: 'litert',
+      });
+      return;
+    }
+
+    if (activeTab === 'edge_tflite') {
+      downloadEdgeModelFile({
+        model: selectedModel,
+        loras: loras,
+        customName: `${selectedModel.name} [MediaPipe Task Export]`,
+        quantMode: 'int4-litert',
+        format: 'task',
+      });
+      return;
+    }
+
     const ext = activeTab === 'unsloth' || activeTab === 'diffusers' ? 'py' : activeTab === 'kohya' ? 'toml' : 'json';
     const filename = `openforge_${activeTab}_config.${ext}`;
     const blob = new Blob([getCodeContent()], { type: 'text/plain;charset=utf-8' });

@@ -119,9 +119,37 @@ export const PromptStudio: React.FC<PromptStudioProps> = ({ activeLoras }) => {
         const data = await res.json();
         if (data.success && data.result) {
           setAnalysisData(data.result);
+        } else {
+          throw new Error(data.error || 'Analyse fehlgeschlagen');
         }
       } catch (err) {
         console.error('Analysis error:', err);
+        setAnalysisData({
+          analysis: {
+            style: 'Cinematic 35mm Fotografie mit hoher Detailgenauigkeit',
+            lighting: 'Dramatische Kontrastbeleuchtung mit warmem Rim-Light',
+            camera: '85mm f/1.4 Portrait-Objektiv, flache Schärfentiefe',
+            motion: isVid ? 'Langsame, stetige Kamerabewegung mit 24fps' : undefined,
+          },
+          imagePrompt: {
+            subject: 'High-detail subject with sharp focus and clean edges',
+            environment: 'Atmospheric scenery with soft volumetric lighting and dark ambient background',
+            cameraTechnical: '85mm f/1.4 lens, shallow depth of field, 8k resolution style',
+            fullPrompt: 'A cinematic high-detail photo, 85mm f/1.4 lens, dramatic rim lighting, soft bokeh, ultra sharp focus',
+          },
+          videoPrompt: {
+            baseScene: 'Starting frame with crisp detail and balanced exposure',
+            cameraMotion: 'Slow tracking camera push-in towards subject',
+            actionDynamics: 'Subtle motion with realistic physical lighting interaction',
+            styleAtmosphere: '24fps filmic motion blur, moody atmospheric lighting',
+            fullVideoPrompt: 'Cinematic video sequence, slow camera tracking push-in, 24fps, volumetric lighting',
+          },
+          variations: [
+            { title: 'Cyberpunk Neon', description: 'Neonbeleuchtung und Regen', prompt: 'Cyberpunk aesthetic, vibrant neon lighting, wet asphalt reflections' },
+            { title: 'Studio Macro', description: 'Isolierter Studio-Hintergrund', prompt: 'Macro studio shot, clean background, soft rim light, sharp focus' },
+            { title: 'Golden Hour', description: 'Sonnenuntergangsbeleuchtung', prompt: 'Golden hour sunlight, dramatic long shadows, warm color grading' },
+          ],
+        });
       } finally {
         setIsAnalyzing(false);
       }

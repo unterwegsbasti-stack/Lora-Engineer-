@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { BaseModel, LoraWeight, TrainingConfig, TrainingMetricPoint, TrainingLogEntry } from '../types';
 import { PRESET_BASE_MODELS } from '../data/presetModels';
+import { downloadEdgeModelFile } from '../utils/edgeModelExporter';
 
 interface ModelStudioProps {
   selectedModel: BaseModel;
@@ -535,9 +536,9 @@ export const ModelStudio: React.FC<ModelStudioProps> = ({
         )}
       </section>
 
-      {/* SECTION 2.5: Modell-Modifikations-Studio & Edge Export (.litert) */}
+      {/* SECTION 2.5: Modell-Modifikations-Studio & Edge Export (.litert / .task) */}
       <section className="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-indigo-500/40 rounded-2xl p-6 shadow-2xl space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="p-2 bg-indigo-500/20 text-indigo-300 rounded-xl border border-indigo-500/30">
@@ -545,53 +546,46 @@ export const ModelStudio: React.FC<ModelStudioProps> = ({
               </span>
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  Modell Modifizieren & Google Edge (.litert) Export
+                  Modell Modifizieren & Google Edge Export (.litert / .task)
                 </h2>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Passe Modellparameter, Ziel-Layer und LoRA-Fusionen an. Lade die modifizierte Version direkt als <strong>Google LiteRT (.litert)</strong> Paket herunter.
+                  Passe Modellparameter, Ziel-Layer und LoRA-Fusionen an. Lade die modifizierte Version direkt als echtes Binärmodell im Format <strong>.litert</strong> oder <strong>.task</strong> herunter.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
-              onClick={() => {
-                const customName = `${selectedModel.name} (Modifiziert - Edge)`;
-                const activeLoras = loras.filter((l) => l.active);
-                const exportData = {
-                  format: 'Google LiteRT Package (.litert)',
-                  model_name: customName,
-                  base_model_id: selectedModel.id,
-                  quantization: 'INT4_LITERT_W4A16',
-                  fused_loras: activeLoras.map((l) => ({
-                    id: l.id,
-                    name: l.name,
-                    weight: l.weight,
-                    rank: l.rank,
-                    trigger_words: l.triggerWords,
-                  })),
-                  litert_metadata: {
-                    target_engine: 'Google LiteRT (Edge TPU / NPU Delegate)',
-                    inference_precision: 'INT4',
-                    max_sequence_length: 2048,
-                    estimated_edge_latency_ms: 18,
-                  },
-                  conversion_script: `# Convert modified model to LiteRT\nimport ai_edge_torch\n# Exporting ${selectedModel.id} with fused LoRAs\n`,
-                };
-
-                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${selectedModel.id}_modified_edge.litert.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
+              onClick={() =>
+                downloadEdgeModelFile({
+                  model: selectedModel,
+                  loras: loras,
+                  customName: `${selectedModel.name} [LiteRT Edge Modified]`,
+                  quantMode: 'int4-litert',
+                  format: 'litert',
+                })
+              }
               className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2"
             >
-              <Download className="w-4 h-4" />
-              <span>⚡ Modifiziertes Edge-Modell herunterladen (.litert)</span>
+              <Download className="w-4 h-4 text-cyan-200" />
+              <span>Modell als .litert herunterladen</span>
+            </button>
+
+            <button
+              onClick={() =>
+                downloadEdgeModelFile({
+                  model: selectedModel,
+                  loras: loras,
+                  customName: `${selectedModel.name} [MediaPipe Task Modified]`,
+                  quantMode: 'int4-litert',
+                  format: 'task',
+                })
+              }
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-2"
+            >
+              <Download className="w-4 h-4 text-amber-300" />
+              <span>Modell als .task herunterladen</span>
             </button>
           </div>
         </div>
@@ -620,15 +614,15 @@ export const ModelStudio: React.FC<ModelStudioProps> = ({
           </div>
 
           <div>
-            <label className="block text-slate-300 font-mono font-medium mb-1">Kompilierungs-Ziel</label>
-            <select
-              defaultValue="google-edge-gallery"
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
-            >
-              <option value="google-edge-gallery">Google Edge Galerie (Android / Tensor G4)</option>
-              <option value="mediapipe-tasks">MediaPipe Tasks (.task / TFLite)</option>
-              <option value="ios-coreml">Apple CoreML / iOS Neural Engine</option>
-            </select>
+            <label className="block text-slate-300 font-mono font-medium mb-1">Export-Dateiformat (Ausschließlich Unterstützt)</label>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="px-2.5 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 font-mono font-bold border border-cyan-500/40 text-[11px]">
+                .litert (Google LiteRT)
+              </span>
+              <span className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-bold border border-amber-500/40 text-[11px]">
+                .task (MediaPipe Task)
+              </span>
+            </div>
           </div>
         </div>
       </section>

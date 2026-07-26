@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { BaseModel, LoraWeight, TrainingConfig } from '../types';
 import { PRESET_BASE_MODELS } from '../data/presetModels';
+import { downloadEdgeModelFile } from '../utils/edgeModelExporter';
 
 interface MobileEdgeStudioProps {
   selectedModel: BaseModel;
@@ -276,8 +277,29 @@ print(f"✅ Successfully created Google LiteRT Edge Package: {output_path}")
   };
 
   const handleDownload = () => {
-    const ext = activeCodeTab === 'python' ? 'py' : activeCodeTab === 'kotlin' ? 'kt' : 'json';
-    const filename = `google_edge_${selectedModel.id}_config.${ext}`;
+    if (activeCodeTab === 'litert') {
+      downloadEdgeModelFile({
+        model: selectedModel,
+        loras: loras,
+        customName: `${selectedModel.name} [LiteRT Edge Package]`,
+        quantMode,
+        format: 'litert',
+      });
+      return;
+    }
+    if (activeCodeTab === 'gallery') {
+      downloadEdgeModelFile({
+        model: selectedModel,
+        loras: loras,
+        customName: `${selectedModel.name} [MediaPipe Task Package]`,
+        quantMode,
+        format: 'task',
+      });
+      return;
+    }
+
+    const ext = activeCodeTab === 'python' ? 'py' : 'kt';
+    const filename = `google_edge_${selectedModel.id}_integration.${ext}`;
     const blob = new Blob([getCodeContent()], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
