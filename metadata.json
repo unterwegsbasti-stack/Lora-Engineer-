@@ -1,0 +1,6 @@
+{
+  "name": "OpenForge AI Studio",
+  "description": "Anpassung von Open Source AI Modellen (FLUX, LLaMA, Qwen, SDXL), LoRA Fine-Tuning, Stacking, Datensatz-Captioning & AI Visual Prompt Engineering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

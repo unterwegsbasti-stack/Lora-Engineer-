@@ -1,0 +1,91 @@
+import { LoraWeight } from '../types';
+
+export const PRESET_LORAS: LoraWeight[] = [
+  {
+    id: 'lora-cyberpunk-neon',
+    name: 'Cyberpunk Neon Metropolis',
+    category: 'style',
+    triggerWords: ['cbrpnk style', 'neon glow', 'rain reflections', 'volumetric fog'],
+    weight: 0.85,
+    rank: 16,
+    alpha: 16,
+    targetModules: ['double_blocks', 'single_blocks'],
+    active: true,
+    description: 'Fügt intensiven Neon-Ästhetik, futuristische Hologramme und dunkle Regenspiegelungen zu Bildern hinzu.',
+    baseModelCompat: ['flux-1-dev', 'flux-1-schnell', 'sdxl-10'],
+    previewImageUrl: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=400&q=80',
+    author: 'AIForgeStudio'
+  },
+  {
+    id: 'lora-studio-lighting',
+    name: 'Luxury Product Studio Lighting',
+    category: 'concept',
+    triggerWords: ['luxury_studio_lighting', 'soft rim light', 'clean reflection pool', '85mm f/1.4'],
+    weight: 0.75,
+    rank: 32,
+    alpha: 32,
+    targetModules: ['qkv', 'proj'],
+    active: true,
+    description: 'Verleiht Objekten ein professionelles High-End Studio-Licht mit sanften Farbübergängen und scharfen Reflexionen.',
+    baseModelCompat: ['flux-1-dev', 'sdxl-10', 'sd-35-large'],
+    previewImageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80',
+    author: 'VisualMaster'
+  },
+  {
+    id: 'lora-anime-watercolor',
+    name: 'Ethereal Anime Watercolor',
+    category: 'style',
+    triggerWords: ['watercolor_anime', 'soft brush strokes', 'ghibli lighting', 'pastel pigments'],
+    weight: 0.90,
+    rank: 16,
+    alpha: 16,
+    targetModules: ['double_blocks'],
+    active: false,
+    description: 'Transformiert Bilder in malerische Aquarell-Anime Kunstwerke im Stil klassischer japanischer Animationsstudios.',
+    baseModelCompat: ['flux-1-dev', 'sdxl-10'],
+    previewImageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80',
+    author: 'NijiArt'
+  },
+  {
+    id: 'lora-german-legal',
+    name: 'Deutsches Juristisches Fach-LoRA',
+    category: 'domain',
+    triggerWords: ['BGB_norm', 'Jura_Expert', 'Subsumtion_Style'],
+    weight: 1.0,
+    rank: 64,
+    alpha: 128,
+    targetModules: ['q_proj', 'k_proj', 'v_proj', 'o_proj'],
+    active: false,
+    description: 'Feinabstimmung für deutsche Gesetzestexte, Gutachtenstil und präzise BGB/StGB Paragraphen-Analyse.',
+    baseModelCompat: ['llama-33-70b', 'mistral-nemo-12b'],
+    author: 'LegalTechDE'
+  },
+  {
+    id: 'lora-ts-react-expert',
+    name: 'TypeScript & React Clean Code',
+    category: 'code',
+    triggerWords: ['clean_ts_react', 'modern_hooks', 'tailwind_utility'],
+    weight: 0.95,
+    rank: 32,
+    alpha: 64,
+    targetModules: ['q_proj', 'v_proj', 'gate_proj', 'up_proj'],
+    active: false,
+    description: 'Optimiert LLMs für sauberen TypeScript 5.8+ Code, strikte Typsicherheit und moderne React Functional Components.',
+    baseModelCompat: ['qwen-25-coder-32b', 'llama-33-70b', 'mistral-nemo-12b'],
+    author: 'DevForge'
+  },
+  {
+    id: 'lora-gemma4-edge-litert',
+    name: 'Gemma 4 LiteRT Smart Voice & Mobile Assistant',
+    category: 'domain',
+    triggerWords: ['litert_assistant', 'edge_voice_mode', 'concise_response'],
+    weight: 0.90,
+    rank: 16,
+    alpha: 32,
+    targetModules: ['q_proj', 'v_proj', 'k_proj', 'o_proj'],
+    active: true,
+    description: 'Speziell für Gemma-4-E2B-it und LiteRT (Google Edge Galerie) auf Mobilgeräten optimiertes LoRA. Bietet extrem kurze, präzise Antworten für Mobile & Voice AI.',
+    baseModelCompat: ['gemma-4-e2b-it-litert', 'gemma-2b-it-edge', 'mobilenet-v4-edge'],
+    author: 'GoogleEdgeDev'
+  }
+];
