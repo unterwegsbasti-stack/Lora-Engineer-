@@ -9,7 +9,8 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: '25mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Lazy init for Gemini AI Client
 function getGeminiClient(): GoogleGenAI | null {
@@ -121,7 +122,7 @@ Liefere ein strukturiertes JSON zurück mit folgenden Feldern:
         const imagePart = {
           inlineData: {
             mimeType: mimeType || 'image/jpeg',
-            data: imageBase64.replace(/^data:image\/\w+;base64,/, '').replace(/^data:video\/\w+;base64,/, ''),
+            data: imageBase64.replace(/^data:[^;]+;base64,/, ''),
           },
         };
 
@@ -300,7 +301,7 @@ app.post('/api/auto-caption', async (req, res) => {
         const imagePart = {
           inlineData: {
             mimeType: mimeType || 'image/jpeg',
-            data: imageBase64.replace(/^data:image\/\w+;base64,/, ''),
+            data: imageBase64.replace(/^data:[^;]+;base64,/, ''),
           },
         };
 

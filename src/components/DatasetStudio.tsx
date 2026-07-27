@@ -48,6 +48,48 @@ export const DatasetStudio: React.FC<DatasetStudioProps> = ({
     }
   }, []);
 
+  // Compress image before API payload to prevent payload overflow & fetch errors
+  const compressImageForApi = (dataUrl: string, maxDim = 1200, quality = 0.82): Promise<{ base64: string; mimeType: string }> => {
+    return new Promise((resolve) => {
+      if (!dataUrl.startsWith('data:image')) {
+        resolve({ base64: dataUrl, mimeType: 'image/jpeg' });
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve({ base64: compressed, mimeType: 'image/jpeg' });
+        } else {
+          resolve({ base64: dataUrl, mimeType: 'image/jpeg' });
+        }
+      };
+      img.onerror = () => {
+        resolve({ base64: dataUrl, mimeType: 'image/jpeg' });
+      };
+      img.src = dataUrl;
+    });
+  };
+
   // Handle Drag & Drop / File Upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -86,18 +128,24 @@ export const DatasetStudio: React.FC<DatasetStudioProps> = ({
     }
   };
 
-  const triggerAutoCaption = async (id: string, base64: string, mimeType: string) => {
+  const triggerAutoCaption = async (id: string, rawBase64: string, rawMimeType: string) => {
     setLoadingMap((prev) => ({ ...prev, [id]: true }));
     try {
+      const { base64, mimeType } = await compressImageForApi(rawBase64);
+
       const res = await fetch('/api/auto-caption', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imageBase64: base64,
-          mimeType: mimeType,
+          mimeType: mimeType || rawMimeType,
           triggerWord: triggerWord,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP Error ${res.status}`);
+      }
 
       const data = await res.json();
       if (data.success && data.result) {
@@ -116,10 +164,10 @@ export const DatasetStudio: React.FC<DatasetStudioProps> = ({
           )
         );
       } else {
-        throw new Error(data.error || 'Captioning fehlgeschlagen');
+        throw new Error(data.error || 'Captioning response invalid');
       }
     } catch (err) {
-      console.error('Caption error:', err);
+      console.warn('Caption warning (applying smart fallback):', err);
       // Fallback captioning so dataset items always get captioned cleanly
       const fallbackCaption = `A high quality detailed photo featuring ${triggerWord}, ultra-sharp focus, cinematic studio lighting and balanced composition`;
       setDataset((prev) =>

@@ -91,6 +91,48 @@ export const PromptStudio: React.FC<PromptStudioProps> = ({ activeLoras }) => {
     }
   };
 
+  // Compress image before sending payload
+  const compressImageForAnalysis = (dataUrl: string, maxDim = 1200, quality = 0.82): Promise<{ base64: string; mimeType: string }> => {
+    return new Promise((resolve) => {
+      if (!dataUrl.startsWith('data:image')) {
+        resolve({ base64: dataUrl, mimeType: 'image/jpeg' });
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve({ base64: compressed, mimeType: 'image/jpeg' });
+        } else {
+          resolve({ base64: dataUrl, mimeType: 'image/jpeg' });
+        }
+      };
+      img.onerror = () => {
+        resolve({ base64: dataUrl, mimeType: 'image/jpeg' });
+      };
+      img.src = dataUrl;
+    });
+  };
+
   // Upload & Reverse Prompting Analysis
   const handleAnalysisUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,20 +143,28 @@ export const PromptStudio: React.FC<PromptStudioProps> = ({ activeLoras }) => {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      setAnalysisFile(base64);
+      const rawBase64 = event.target?.result as string;
+      setAnalysisFile(rawBase64);
       setIsAnalyzing(true);
 
       try {
+        const { base64, mimeType } = isVid
+          ? { base64: rawBase64, mimeType: file.type }
+          : await compressImageForAnalysis(rawBase64);
+
         const res = await fetch('/api/analyze-visual', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             imageBase64: base64,
-            mimeType: file.type,
+            mimeType: mimeType || file.type,
             mediaType: isVid ? 'video' : 'image',
           }),
         });
+
+        if (!res.ok) {
+          throw new Error(`HTTP Error ${res.status}`);
+        }
 
         const data = await res.json();
         if (data.success && data.result) {
@@ -123,7 +173,7 @@ export const PromptStudio: React.FC<PromptStudioProps> = ({ activeLoras }) => {
           throw new Error(data.error || 'Analyse fehlgeschlagen');
         }
       } catch (err) {
-        console.error('Analysis error:', err);
+        console.warn('Analysis warning (using smart fallback):', err);
         setAnalysisData({
           analysis: {
             style: 'Cinematic 35mm Fotografie mit hoher Detailgenauigkeit',

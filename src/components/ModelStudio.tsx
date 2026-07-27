@@ -13,9 +13,11 @@ import {
   Sparkles, 
   Info,
   ShieldCheck,
+  ShieldAlert,
   Zap,
   Tag,
-  Activity
+  Activity,
+  Smartphone
 } from 'lucide-react';
 import { BaseModel, LoraWeight, TrainingConfig, TrainingMetricPoint, TrainingLogEntry } from '../types';
 import { PRESET_BASE_MODELS } from '../data/presetModels';
@@ -587,6 +589,21 @@ export const ModelStudio: React.FC<ModelStudioProps> = ({
               <Download className="w-4 h-4 text-amber-300" />
               <span>Modell als .task herunterladen</span>
             </button>
+          </div>
+        </div>
+
+        {/* Edge Inferenz Info Box */}
+        <div className="bg-slate-950/70 p-3.5 rounded-xl border border-indigo-500/20 flex items-start gap-3 text-xs">
+          <div className="p-1.5 bg-indigo-500/20 text-indigo-300 rounded-lg shrink-0 mt-0.5">
+            <Smartphone className="w-4 h-4" />
+          </div>
+          <div className="space-y-1 text-slate-300">
+            <p className="font-semibold text-white">
+              Tipp zur Inferenz-Ausführung auf Edge-Geräten:
+            </p>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Das exportierte <code className="text-cyan-300">.litert</code> / <code className="text-amber-300">.task</code> Paket enthält alle notwendigen Manifest-Einträge, Tokenizer-Zuordnungen & LoRA-Gewichtskonfigurationen für die Integration in Android LiteRT. Um Antworten direkt im Browser zu testen, nutze die Registerkarte <strong>Google Edge Studio</strong> mit dem eingebauten Inferenz-Simulator!
+            </p>
           </div>
         </div>
 

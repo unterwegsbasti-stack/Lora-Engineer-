@@ -5,12 +5,14 @@ import { DatasetStudio } from './components/DatasetStudio';
 import { PromptStudio } from './components/PromptStudio';
 import { MobileEdgeStudio } from './components/MobileEdgeStudio';
 import { ExportModal } from './components/ExportModal';
+import { LicenseAndDocsModal } from './components/LicenseAndDocsModal';
 import { BaseModel, LoraWeight, TrainingConfig, DatasetItem } from './types';
 import { PRESET_BASE_MODELS } from './data/presetModels';
 import { PRESET_LORAS } from './data/presetLoras';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'model' | 'dataset' | 'prompt' | 'mobile_edge' | 'export'>('model');
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
 
   // Selected Open Source Base Model
   const [selectedModel, setSelectedModel] = useState<BaseModel>(PRESET_BASE_MODELS[0]);
@@ -60,6 +62,7 @@ export default function App() {
         selectedModel={selectedModel}
         activeLoras={loras}
         vramUsed={calculatedVram}
+        onOpenDocs={() => setIsDocsOpen(true)}
       />
 
       {/* Main Container */}
@@ -107,13 +110,28 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <p>© OpenForge AI Studio — Modellanpassung, LoRA Stacking & AI Visual Engineering</p>
-          <p className="font-mono text-[11px] text-slate-600">
-            Powered by Gemini 3.6 & Open-Source AI Architecture
-          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsDocsOpen(true)}
+              className="hover:text-indigo-300 transition-colors underline decoration-slate-800 underline-offset-4"
+            >
+              Open-Source Lizenz (Apache 2.0)
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => setIsDocsOpen(true)}
+              className="hover:text-indigo-300 transition-colors underline decoration-slate-800 underline-offset-4"
+            >
+              Dokumentation & README
+            </button>
+          </div>
         </div>
       </footer>
+
+      {/* License & Documentation Modal */}
+      <LicenseAndDocsModal isOpen={isDocsOpen} onClose={() => setIsDocsOpen(false)} />
     </div>
   );
 }
